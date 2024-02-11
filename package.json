@@ -1,0 +1,28 @@
+{
+  "name": "backendvroom",
+  "version": "1.0.0",
+  "description": "Vroom backend server",
+  "main": "./src/app.js",
+  "scripts": {
+    "test": "test",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VroomUni/BackendVroom.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/VroomUni/BackendVroom/issues"
+  },
+  "homepage": "https://github.com/VroomUni/BackendVroom#readme",
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.2",
+    "express": "^4.18.2",
+    "sequelize": "^6.36.0"
+  }
+}
