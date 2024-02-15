@@ -1,11 +1,22 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const port = 8080;
+const dotenv = require("dotenv");
+dotenv.config();
+const { connectDb } = require("./config/db");
+const { User } = require("./models/User");
 
-app.get('/', (req, res) => {
-  res.send('Hello, Node.js!');
+const port = process.env.PORT;
+connectDb();
+
+
+
+app.all("/api", (req, res) => {
+  console.log("hello");
+  res.sendStatus(200);
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+
+
+const server = app.listen(port, () => {
+  console.log("listening on " + port);
 });
