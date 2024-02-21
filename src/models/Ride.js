@@ -25,10 +25,7 @@ const Ride = sequelize.define("Ride", {
     },
     allowNull: false,
   },
-  date: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
+  
   startTime: {
     type: DataTypes.TIME,
     allowNull: false,

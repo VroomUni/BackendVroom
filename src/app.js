@@ -2,17 +2,20 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
+require("./config/Firebase");
 const { connectDb } = require("./config/db");
-const { User } = require("./models/User");
+const { userRouter } = require("./routes/userRouter");
 
 const port = process.env.PORT;
 connectDb();
 
+app.use(express.json());
+//routes and api design to be updated
+app.use("/api/user",userRouter);
 
 
 app.all("/api", (req, res) => {
-  console.log("hello");
-  res.sendStatus(200);
+  res.json("hello world").status(200);
 });
 
 

@@ -10,10 +10,19 @@ const { PassengerRating } = require("./PassengerRating");
 const User = sequelize.define(
   "User",
   {
-    id: { primaryKey: true, type: DataTypes.UUID },
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    firebaseId: { type: DataTypes.STRING(96) },
+
     email: {
       type: DataTypes.STRING(45),
       allowNull: false,
+      validate: {
+        is: /^[a-zA-Z0-9._-]+@(medtech\.tn|msb\.tn)$/, //ends with msb.tn or medtech.tn
+      },
     },
     firstName: {
       type: DataTypes.STRING(45),
@@ -30,6 +39,7 @@ const User = sequelize.define(
     phoneNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true,
     },
     gender: {
       type: DataTypes.ENUM("male", "female"),
@@ -37,7 +47,6 @@ const User = sequelize.define(
     },
     profilePicPath: {
       type: DataTypes.STRING(45),
-      allowNull: false,
     },
   },
   {
@@ -69,13 +78,11 @@ RideOccurence.belongsToMany(User, { through: RideRequest }); //1 Ride occurence 
 Ride.hasMany(RideOccurence);
 RideOccurence.belongsTo(Ride);
 
-
 //driver rates Request association
 User.belongsToMany(RideRequest, {
   through: DriverRating,
   foreignKey: "driverId",
 }); // 1 user , in this case driver rates many requests
-
 
 // passenger rates ride occurence association
 User.belongsToMany(RideOccurence, {
@@ -84,7 +91,6 @@ User.belongsToMany(RideOccurence, {
 });
 RideOccurence.belongsToMany(User, {
   through: PassengerRating,
-  foreignKey: "passengerId",
 });
 
 module.exports = { User };

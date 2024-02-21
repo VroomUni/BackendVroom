@@ -17,7 +17,6 @@ const RideOccurence = sequelize.define("Ride_occurence", {
   },
   note: {
     type: DataTypes.STRING(45),
-    allowNull: true,
   },
 });
 

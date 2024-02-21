@@ -11,7 +11,7 @@ const Recurrence = sequelize.define(
 
     type: {
       type: DataTypes.ENUM("once", "weekly", "daily"),
-      allowNull: true,
+      allowNull: false,
       defaultValue: "once",
     },
     dayOfWeek: {
@@ -24,7 +24,6 @@ const Recurrence = sequelize.define(
         "saturday",
         "sunday"
       ),
-      allowNull: true,
     },
   },
 

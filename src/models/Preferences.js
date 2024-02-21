@@ -9,19 +9,15 @@ const Preference = sequelize.define("Preference", {
 
   smoking: {
     type: DataTypes.BOOLEAN(),
-    allowNull: true,
   },
   talkative: {
     type: DataTypes.ENUM(['light chitchat','gabfest']),
-    allowNull: true,
   },
   musicGenre: {
     type: DataTypes.STRING(45),
-    allowNull: true,
   },
   eating: {
     type: DataTypes.BOOLEAN(),
-    allowNull: true,
   }
 },{timestamps:false}) ;
 
