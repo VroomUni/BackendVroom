@@ -32,7 +32,6 @@ const signUp = async (req, res) => {
     await newUser.save();
     await sendEmailVerification(FbaseUser.user);
 
-    // const emailSent = await getAuth;
     console.log("==================");
     console.log("new user created:" + JSON.stringify(newUser));
 
@@ -75,4 +74,6 @@ const signIn = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-module.exports = { signUp, signIn };
+
+
+module.exports = { signUp, signIn  };

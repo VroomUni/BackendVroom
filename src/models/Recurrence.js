@@ -10,20 +10,12 @@ const Recurrence = sequelize.define(
     },
 
     type: {
-      type: DataTypes.ENUM("once", "weekly", "daily"),
+      type: DataTypes.ENUM("once", "weekly", "everyday"),
       allowNull: false,
       defaultValue: "once",
     },
-    dayOfWeek: {
-      type: DataTypes.ENUM(
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-        "sunday"
-      ),
+    daysOfWeek: {
+      type: DataTypes.JSON,
     },
   },
 

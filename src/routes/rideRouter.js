@@ -1,12 +1,7 @@
-const userRouter = require("express").Router();
-const {
-  signUp,
+const rideRouter = require("express").Router();
+const { createRide } = require("../controllers/rideController");
 
-  signIn,
-} = require("../controllers/userController");
-
-userRouter.post("/signup", signUp);
-userRouter.post("/signin", signIn);
+rideRouter.post("/", createRide);
 // userRouter.get("/offer", getPostedOffers); //retrieves orders too
 // userRouter.delete("/offer", deleteOffer);
 // userRouter.put("/profile", updateProfile);
@@ -14,4 +9,4 @@ userRouter.post("/signin", signIn);
 // userRouter.put("/offer", updateOffer);
 // userRouter.get("/order/:order_id", getScannedOrder);
 
-module.exports = { userRouter };
+module.exports = { rideRouter };

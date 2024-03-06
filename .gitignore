@@ -1,2 +1,2 @@
 /node_modules
-./src/config/FirebaseServiceAccount.json
+/src/config/Firebase.js

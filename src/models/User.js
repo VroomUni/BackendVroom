@@ -21,7 +21,7 @@ const User = sequelize.define(
       type: DataTypes.STRING(45),
       allowNull: false,
       validate: {
-        is: /^[a-zA-Z0-9._-]+@(medtech\.tn|msb\.tn)$/, //ends with msb.tn or medtech.tn
+        is: /^[a-zA-Z0-9._-]+@(medtech\.tn|msb\.tn|smu\.tn)$/, //ends with msb.tn or medtech.tn
       },
     },
     firstName: {
