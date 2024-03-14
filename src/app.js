@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
-require("./config/Firebase");
 const { connectDb } = require("./config/db");
 const { userRouter } = require("./routes/userRouter");
 const { rideRouter } = require("./routes/rideRouter");

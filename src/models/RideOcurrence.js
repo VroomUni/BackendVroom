@@ -10,14 +10,15 @@ const RideOccurence = sequelize.define("Ride_occurence", {
       isIn: [[-1, 0, 1, 2]],
     },
     allowNull: false,
+    defaultValue:0
   },
-  date: {
-    type: DataTypes.DATE,
+  occurenceDate: {
+    type: DataTypes.DATEONLY,
     allowNull: false,
   },
   note: {
     type: DataTypes.STRING(45),
   },
-});
+},{timestamps:false});
 
 module.exports = { RideOccurence };

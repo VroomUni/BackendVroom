@@ -1,2 +1,2 @@
 /node_modules
-/src/config/Firebase.js
+./src/config/Firebase.js

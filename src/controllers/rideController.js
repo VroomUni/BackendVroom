@@ -5,11 +5,15 @@ const createRide = async (req, res) => {
   console.log("createRide request received ");
 
   try {
-    const {recurrence , ...rideObj} = req.body;
-    const newRide = await Ride.create(rideObj);
-    const rideRecurrence = await Recurrence.create({...recurrence,RideId:newRide.id});
+    const { recurrence, ...rideObj } = req.body;
+    const newRide = await Ride.create(
+      { ...rideObj, Recurrence: recurrence },
+      { include: Recurrence }
+    );
+    console.log(recurrence);
+   
     console.log("==================");
-    console.log(" ride :  " + JSON.stringify(newRide));
+    console.log(" ride : SUCCESS  ");
 
     return res.status(200).json({
       msg: "Successful Ride creation ",

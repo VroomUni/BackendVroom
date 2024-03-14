@@ -6,7 +6,6 @@ const {
 } = require("../controllers/userController");
 
 userRouter.post("/signup", signUp);
-userRouter.post("/signin", signIn);
 // userRouter.get("/offer", getPostedOffers); //retrieves orders too
 // userRouter.delete("/offer", deleteOffer);
 // userRouter.put("/profile", updateProfile);

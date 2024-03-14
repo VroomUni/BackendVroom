@@ -19,9 +19,9 @@ const Ride = sequelize.define("Ride", {
   status: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
-    //-1 : canceled , 0 : available , 1 : fullyReserved , 2 : done
+    //-1 : canceled , 0 : active
     validate: {
-      isIn: [[-1, 0, 1, 2]],
+      isIn: [[-1, 0]],
     },
     allowNull: false,
   },
@@ -48,7 +48,10 @@ const Ride = sequelize.define("Ride", {
   },
 });
 //assoc
-Ride.hasOne(Recurrence);
+Ride.hasOne(Recurrence, {
+  onDelete: "cascade",
+  hooks: true,
+});
 Recurrence.belongsTo(Ride);
 
 module.exports = { Ride };
