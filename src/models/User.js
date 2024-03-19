@@ -10,12 +10,11 @@ const { PassengerRating } = require("./PassengerRating");
 const User = sequelize.define(
   "User",
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    firebaseId: { type: DataTypes.STRING(96) },
+    // id: {
+    //   type: DataTypes.INTEGER,
+    //   autoIncrement: true,
+    // },
+    firebaseId: { type: DataTypes.STRING(96), primaryKey: true },
 
     email: {
       type: DataTypes.STRING(45),

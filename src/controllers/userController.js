@@ -1,5 +1,5 @@
+const { Preference } = require("../models/Preferences");
 const { User } = require("../models/User");
-
 
 const signUp = async (req, res) => {
   console.log("signup request received ");
@@ -22,7 +22,7 @@ const signUp = async (req, res) => {
 
     return res.status(200).json({
       msg: "Successful insertion , redirect to home ",
-      inserted: { newUser:newUser.dataValues },
+      inserted: { newUser: newUser.dataValues },
     });
   } catch (error) {
     console.log("==================");
@@ -31,6 +31,42 @@ const signUp = async (req, res) => {
   }
 };
 
+const setPreferences = async (req, res) => {
+  const girlsBoysObjHelper = () => {
+    const { boysOnly, girlsOnly } = req.body;
+    if (!(boysOnly && girlsOnly)) {
+      const result = {};
+      if (boysOnly) {
+        result.boysOnly = boysOnly;
+      }
+      if (girlsOnly) {
+        result.girlsOnly = girlsOnly;
+      }
+      return result;
+    }
+  };
+  console.log("preferences request received ");
+  const preferencesInfo = {
+    smoking: req.body.smoking,
+    talkative: req.body.talkative,
+    loudMusic: req.body.loudMusic,
+    foodFriendly: req.body.foodFriendly,
+    UserFirebaseId: req.body.UserFirebaseId,
+    ...girlsBoysObjHelper(),
+  };
 
+  try {
+    const newPreferences = await Preference.create(preferencesInfo);
 
-module.exports = { signUp };
+    console.log("==================");
+    console.log("new preferences created:" + JSON.stringify(newPreferences));
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.log("==================");
+    console.error("Error creating preferences:", error);
+    return res.status(500).json(error);
+  }
+};
+
+module.exports = { signUp, setPreferences };

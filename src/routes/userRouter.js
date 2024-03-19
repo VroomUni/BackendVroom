@@ -1,12 +1,8 @@
 const userRouter = require("express").Router();
-const {
-  signUp,
-
-  signIn,
-} = require("../controllers/userController");
+const { signUp, setPreferences } = require("../controllers/userController");
 
 userRouter.post("/signup", signUp);
-// userRouter.get("/offer", getPostedOffers); //retrieves orders too
+userRouter.post("/preferences", setPreferences);
 // userRouter.delete("/offer", deleteOffer);
 // userRouter.put("/profile", updateProfile);
 // userRouter.get("/profile", getBuisnessProfile);
