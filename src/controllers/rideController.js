@@ -11,66 +11,23 @@ const createRide = async (req, res) => {
       { ...rideObj, Recurrence: recurrence },
       { include: Recurrence }
     );
+
     console.log("==================");
     console.log(" ride : SUCCESS  ");
-    const isRideDateToday =
-      new Date(newRide.initialDate).setHours(0, 0, 0, 0) ==
-      new Date().setHours(0, 0, 0, 0);
+
+    const isRideDateToday = isNewRideDateToday(newRide.initialDate);
+
     if (recurrence.type === "once") {
-      await RideOccurence.create({ occurenceDate: newRide.initialDate });
-    }
-    //check if ride is today , if not dont create occurences , the scheduled script will take over
-    else if (recurrence.type === "weekly" && isRideDateToday) {
-      const daysOfWeek = [
-        "sunday",
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-      ];
-
-      // Get the current day index
-      const todayDay = new Date().getDay();
-
-      // Loop through the recurrence object
-      for (const repeatingDay of Object.keys(recurrence.daysOfWeek)) {
-        const repeatingDayIndex = daysOfWeek.indexOf(repeatingDay);
-
-        //if ride is today , and its repeating => create rideOcc for today and for +7 days
-        if (todayDay === repeatingDayIndex) {
-          const initialDate = new Date(newRide.initialDate);
-          const nextTargetDayDate = new Date(initialDate);
-          nextTargetDayDate.setDate(initialDate.getDate() + 7);
-
-          console.log(
-            "next occurrence of:",
-            daysOfWeek[repeatingDayIndex],
-            "date:",
-            nextTargetDayDate
-          );
-          await RideOccurence.bulkCreate([
-            { occurenceDate: initialDate, RideId: newRide.id },
-            { occurenceDate: nextTargetDayDate, RideId: newRide.id },
-          ]);
-        } else {
-          const daysUntilTargetDay = (repeatingDayIndex + 7 - todayDay) % 7;
-          const nextTargetDayDate = new Date();
-          nextTargetDayDate.setDate(
-            nextTargetDayDate.getDate() + daysUntilTargetDay
-          );
-
-          console.log(
-            "next occurrence of:",
-            daysOfWeek[repeatingDayIndex],
-            "date:",
-            nextTargetDayDate
-          );
-          await RideOccurence.create({ occurenceDate: nextTargetDayDate });
-        }
-      }
+      await createOnceRideOccurrence(newRide.initialDate, newRide.id);
+    } else if (recurrence.type === "weekly") {
+      await createWeeklyRideOccurrences(
+        new Date(newRide.initialDate),
+        recurrence.daysOfWeek,
+        newRide.id,
+        isRideDateToday
+      );
     } else if (recurrence.type === "everyday" && isRideDateToday) {
+      // Logic for everyday recurrence
     }
 
     return res.status(200).json({
@@ -83,7 +40,76 @@ const createRide = async (req, res) => {
   }
 };
 
-async function generateRideOccurences(recurrence) {
-  toISOString().slice(0, 10).replace("T", " ");
-}
+const isNewRideDateToday = initialDate => {
+  const rideDate = new Date(initialDate).setHours(0, 0, 0, 0);
+  const currentDate = new Date().setHours(0, 0, 0, 0);
+  return rideDate === currentDate;
+};
+
+const createOnceRideOccurrence = async (initialDate, rideId) => {
+  await RideOccurence.create({
+    occurenceDate: initialDate,
+    RideId: rideId,
+  });
+};
+
+const createWeeklyRideOccurrences = async (
+  initialDate,
+  repeatingDays,
+  rideId,
+  isRideDateToday
+) => {
+  const daysOfWeekArray = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+
+  const rideDateDayIndex = initialDate.getDay();
+  //loop through repeating days in recurrence obj
+  for (const repeatingDay of Object.keys(repeatingDays)) {
+    const repeatingDayIndex = daysOfWeekArray.indexOf(repeatingDay);
+    //if ride is today , and today is on the repeating days
+    if (rideDateDayIndex === repeatingDayIndex && isRideDateToday) {
+      const nextTargetDayDate = new Date(initialDate).setDate(
+        initialDate.getDate() + 7
+      );
+
+      console.log(
+        "next occurrence of:",
+        daysOfWeekArray[repeatingDayIndex],
+        "date:",
+        nextTargetDayDate
+      );
+      //create an occ for today and for next week on the same day , since its repeating
+      await RideOccurence.bulkCreate([
+        { occurenceDate: initialDate, RideId: rideId },
+        { occurenceDate: nextTargetDayDate, RideId: rideId },
+      ]);
+    }else {
+      const daysUntilTargetDay = (repeatingDayIndex + 7 - rideDateDayIndex) % 7;
+      const nextTargetDayDate = new Date(initialDate);
+      nextTargetDayDate.setDate(
+        nextTargetDayDate.getDate() + daysUntilTargetDay
+      );
+
+      console.log(
+        "next occurrence of:",
+        daysOfWeekArray[repeatingDayIndex],
+        "date:",
+        nextTargetDayDate
+      );
+
+      await RideOccurence.create({
+        occurenceDate: nextTargetDayDate,
+        RideId: rideId,
+      });
+    }
+  }
+};
+
 module.exports = { createRide };
