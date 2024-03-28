@@ -1,12 +1,17 @@
+const { Op, json } = require("sequelize");
 const { Recurrence } = require("../models/Recurrence");
 const { Ride } = require("../models/Ride");
 const { RideOccurence } = require("../models/RideOccurence");
+const { isPointInPolygon, isValidCoordinate } = require("geolib");
+const { decode } = require("@googlemaps/polyline-codec");
 
 const createRide = async (req, res) => {
+  console.log("==================");
   console.log("createRide request received ");
 
   try {
     const { recurrence, ...rideObj } = req.body;
+    console.log(req.body);
     const newRide = await Ride.create(
       { ...rideObj, Recurrence: recurrence },
       { include: Recurrence }
@@ -41,12 +46,83 @@ const createRide = async (req, res) => {
   }
 };
 
+const timeFilterHandler = (fromTime, toTime) => {
+  if (!toTime) {
+    return { [Op.eq]: fromTime };
+  }
+  return { [Op.between]: [fromTime, toTime] };
+};
+const searchForRides = async (req, res) => {
+  console.log("==================");
+  console.log("search for ride request received ");
+  const {
+    from,
+    to,
+    destinationOrOrigin,
+    initialDate: rideDate,
+    fromTime,
+    toTime,
+  } = req.query;
+  console.log(req.query);
+  // destinationOrOrigin=JSON.parse(destinationOrOrigin);
+  try {
+    const rides = await Ride.findAll({
+      where: {
+        // either same from or same to
+        [Op.or]: { from: from, to: to },
+        //to handle both cases when an exact time or an interval is provided
+        startTime: timeFilterHandler(fromTime, toTime),
+        status: 0,
+      },
+      include: [
+        {
+          model: RideOccurence,
+          where: {
+            occurenceDate: rideDate,
+            status: 0,
+          },
+        },
+      ],
+    });
+    rides.forEach(ride => {
+      ride.Ride_occurences.forEach(rOcc => {
+        console.log(rOcc.dataValues);
+      });
+    });
+
+    const matchingRides = rides.filter(ride => {
+      const isPassengerInRange = isPointInPolygon(
+        JSON.parse(destinationOrOrigin),
+        formatPolygon(ride.encodedArea)
+      );
+      return isPassengerInRange;
+    });
+
+    console.log("MATCHED RIDES COUNT", matchingRides.length);
+
+    return res.status(200).json({
+      rides: matchingRides,
+    });
+  } catch (error) {
+    console.log("==================");
+    console.error("Error searching for a ride ", error);
+    return res.status(500).json(error);
+  }
+};
+
+//utility functions here --
 const isNewRideDateToday = initialDate => {
   const rideDate = initialDate.setHours(0, 0, 0, 0);
   const currentDate = new Date().setHours(0, 0, 0, 0);
   return rideDate === currentDate;
 };
 
+const formatPolygon = polygon => {
+  return decode(polygon).map(cord => ({
+    latitude: cord[0],
+    longitude: cord[1],
+  }));
+};
 const createOnceRideOccurrence = async (initialDate, rideId) => {
   await RideOccurence.create({
     occurenceDate: initialDate,
@@ -137,4 +213,4 @@ const createDailyRideOccurences = async (initialDate, rideId) => {
   return;
 };
 
-module.exports = { createRide };
+module.exports = { createRide, searchForRides };
