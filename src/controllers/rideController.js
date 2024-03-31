@@ -2,8 +2,10 @@ const { Op, json } = require("sequelize");
 const { Recurrence } = require("../models/Recurrence");
 const { Ride } = require("../models/Ride");
 const { RideOccurence } = require("../models/RideOccurence");
+const { User } = require("../models/User");
 const { isPointInPolygon, isValidCoordinate } = require("geolib");
 const { decode } = require("@googlemaps/polyline-codec");
+const { Preference } = require("../models/Preferences");
 
 const createRide = async (req, res) => {
   console.log("==================");
@@ -46,12 +48,6 @@ const createRide = async (req, res) => {
   }
 };
 
-const timeFilterHandler = (fromTime, toTime) => {
-  if (!toTime) {
-    return { [Op.eq]: fromTime };
-  }
-  return { [Op.between]: [fromTime, toTime] };
-};
 const searchForRides = async (req, res) => {
   console.log("==================");
   console.log("search for ride request received ");
@@ -64,7 +60,6 @@ const searchForRides = async (req, res) => {
     toTime,
   } = req.query;
   console.log(req.query);
-  // destinationOrOrigin=JSON.parse(destinationOrOrigin);
   try {
     const rides = await Ride.findAll({
       where: {
@@ -81,22 +76,26 @@ const searchForRides = async (req, res) => {
             occurenceDate: rideDate,
             status: 0,
           },
+          attributes: ["id"],
         },
       ],
+      attributes: ["encodedArea"],
     });
-    rides.forEach(ride => {
-      ride.Ride_occurences.forEach(rOcc => {
-        console.log(rOcc.dataValues);
-      });
-    });
-
-    const matchingRides = rides.filter(ride => {
-      const isPassengerInRange = isPointInPolygon(
-        JSON.parse(destinationOrOrigin),
-        formatPolygon(ride.encodedArea)
-      );
-      return isPassengerInRange;
-    });
+    // rides.forEach(ride => {
+    //   ride.Ride_occurences.forEach(rOcc => {
+    //     console.log(rOcc.dataValues);
+    //   });
+    // });
+    //only send the ride OCcurences Ids
+    const matchingRides = rides
+      .filter(ride => {
+        const isPassengerInRange = isPointInPolygon(
+          JSON.parse(destinationOrOrigin),
+          formatPolygon(ride.encodedArea)
+        );
+        return isPassengerInRange;
+      })
+      .flatMap(ride => ride.Ride_occurences.map(rOcc => rOcc.id));
 
     console.log("MATCHED RIDES COUNT", matchingRides.length);
 
@@ -110,13 +109,72 @@ const searchForRides = async (req, res) => {
   }
 };
 
+const fetchRidesByIds = async (req, res) => {
+  console.log("==================");
+  console.log("search for specefic rides request received ");
+  console.log(req.query);
+  const { ids } = req.query;
+  const rideIds = ids.split(",");
+  try {
+    //fetch all details abt ride occ = parent ride - user driver - user preferences
+    const rides = await RideOccurence.findAll({
+      where: {
+        id: {
+          [Op.in]: rideIds,
+        },
+      },
+      include: [
+        {
+          model: Ride,
+          include: [
+            {
+              model: User,
+              as: "driver",
+              attributes: [
+                "firebaseId",
+                "email",
+                "firstName",
+                "phoneNumber",
+                "lastName",
+              ],
+              include: [
+                {
+                  model: Preference,
+                  attributes: { exclude: ["id", "UserFirebaseId"] },
+                },
+              ],
+            },
+          ],
+          attributes: { exclude: ["encodedArea"] },
+        },
+      ],
+      attributes: ["id", "occurenceDate", "note"],
+    });
+
+    rides.forEach(ride => console.log(JSON.stringify(ride.dataValues)));
+
+    return res.status(200).json({
+      rides: rides,
+    });
+  } catch (error) {
+    console.log("==================");
+    console.error("Error fetching  rides ", error);
+    return res.status(500).json(error);
+  }
+};
+
 //utility functions here --
 const isNewRideDateToday = initialDate => {
   const rideDate = initialDate.setHours(0, 0, 0, 0);
   const currentDate = new Date().setHours(0, 0, 0, 0);
   return rideDate === currentDate;
 };
-
+const timeFilterHandler = (fromTime, toTime) => {
+  if (!toTime) {
+    return { [Op.eq]: fromTime };
+  }
+  return { [Op.between]: [fromTime, toTime] };
+};
 const formatPolygon = polygon => {
   return decode(polygon).map(cord => ({
     latitude: cord[0],
@@ -213,4 +271,4 @@ const createDailyRideOccurences = async (initialDate, rideId) => {
   return;
 };
 
-module.exports = { createRide, searchForRides };
+module.exports = { createRide, searchForRides, fetchRidesByIds };
