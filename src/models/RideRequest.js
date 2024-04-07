@@ -6,14 +6,8 @@ const RideRequest = sequelize.define("ride_request", {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
   },
-  //  to fetch only rides in the same direction as the req (either  passenger & driver both from SMU to x ||both from x to SMU)
-  // we compare the req.from with ride.from (or ride.to with req.to)
-  // (but req.from is of type POINT gemotry , and ride.from is of type string , so that has to be handled)
-  from: {
-    type: DataTypes.GEOMETRY("POINT"),
-    allowNull: false,
-  },
-  to: {
+
+  passengerLocation: {
     type: DataTypes.GEOMETRY("POINT"),
     allowNull: false,
   },
@@ -25,9 +19,8 @@ const RideRequest = sequelize.define("ride_request", {
       isIn: [[-1, 0, 1]],
     },
     allowNull: false,
+    defaultValue:0
   },
 });
-//assoc
-
 
 module.exports = { RideRequest };

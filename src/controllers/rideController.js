@@ -1,11 +1,12 @@
-const { Op, json } = require("sequelize");
+const { Op, Sequelize, where } = require("sequelize");
 const { Recurrence } = require("../models/Recurrence");
 const { Ride } = require("../models/Ride");
 const { RideOccurence } = require("../models/RideOccurence");
 const { User } = require("../models/User");
-const { isPointInPolygon, isValidCoordinate } = require("geolib");
+const { isPointInPolygon } = require("geolib");
 const { decode } = require("@googlemaps/polyline-codec");
 const { Preference } = require("../models/Preferences");
+const { RideRequest } = require("../models/RideRequest");
 
 const createRide = async (req, res) => {
   console.log("==================");
@@ -47,7 +48,9 @@ const createRide = async (req, res) => {
     return res.status(500).json(error);
   }
 };
+//searches for rides based on filters provided by passenger
 
+// to do : dont show rides posted by the passenger
 const searchForRides = async (req, res) => {
   console.log("==================");
   console.log("search for ride request received ");
@@ -58,6 +61,7 @@ const searchForRides = async (req, res) => {
     initialDate: rideDate,
     fromTime,
     toTime,
+    passengerId,
   } = req.query;
   console.log(req.query);
   try {
@@ -76,18 +80,13 @@ const searchForRides = async (req, res) => {
             occurenceDate: rideDate,
             status: 0,
           },
+          //only send the ride OCcurences Ids
           attributes: ["id"],
         },
       ],
       attributes: ["encodedArea"],
     });
-    // rides.forEach(ride => {
-    //   ride.Ride_occurences.forEach(rOcc => {
-    //     console.log(rOcc.dataValues);
-    //   });
-    // });
-    //only send the ride OCcurences Ids
-    const matchingRides = rides
+    const ridesInRange = rides
       .filter(ride => {
         const isPassengerInRange = isPointInPolygon(
           JSON.parse(destinationOrOrigin),
@@ -96,11 +95,19 @@ const searchForRides = async (req, res) => {
         return isPassengerInRange;
       })
       .flatMap(ride => ride.Ride_occurences.map(rOcc => rOcc.id));
+    //fething all requests the passenger made
+    const requests = await RideRequest.findAll({
+      where: { passengerId: passengerId },
+    });
+    //filtering rideoccs that the passenger requested 
+    const unrequestedMatchingRides = ridesInRange.filter(rocc => {
+      return !requests.some(req => req.RideOccurenceId === rocc);
+    });
 
-    console.log("MATCHED RIDES COUNT", matchingRides.length);
+    console.log("MATCHED RIDES COUNT", unrequestedMatchingRides.length);
 
     return res.status(200).json({
-      rides: matchingRides,
+      rides: unrequestedMatchingRides,
     });
   } catch (error) {
     console.log("==================");
@@ -108,7 +115,7 @@ const searchForRides = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-
+//accepts ride Ids and fetches them / todo:  exclude rides already sent request
 const fetchRidesByIds = async (req, res) => {
   console.log("==================");
   console.log("search for specefic rides request received ");
@@ -151,14 +158,70 @@ const fetchRidesByIds = async (req, res) => {
       attributes: ["id", "occurenceDate", "note"],
     });
 
-    rides.forEach(ride => console.log(JSON.stringify(ride.dataValues)));
-
     return res.status(200).json({
       rides: rides,
     });
   } catch (error) {
     console.log("==================");
     console.error("Error fetching  rides ", error);
+    return res.status(500).json(error);
+  }
+};
+// will redo this with sequelize logic in future
+const fetchAllUnrequestedRides = async (req, res) => {
+  console.log("==================");
+  console.log("fetch all unfiltered & unrequested rides received ");
+  const { passengerId, filterDate } = req.body;
+  try {
+    // Fetch all details about ride occurrences = parent ride - user driver - user preferences
+    const _ = await RideOccurence.findAll({
+      where: { occurenceDate: filterDate.split("T")[0], status: 0 },
+      //including relevant data with ride occurence
+      include: [
+        {
+          model: Ride,
+          include: [
+            {
+              model: User,
+              as: "driver",
+              attributes: [
+                "firebaseId",
+                "email",
+                "firstName",
+                "phoneNumber",
+                "lastName",
+              ],
+              include: [
+                {
+                  model: Preference,
+                  attributes: { exclude: ["id", "UserFirebaseId"] },
+                },
+              ],
+            },
+          ],
+          attributes: { exclude: ["encodedArea"] },
+        },
+      ],
+      attributes: ["id", "occurenceDate", "note"],
+    });
+    console.log("OCCs", _.length);
+    //fething all requests the passenger made
+    const requests = await RideRequest.findAll({
+      where: { passengerId: passengerId },
+    });
+
+    console.log("REQS", requests.length);
+    //filtering rideOccurences that already are requested by the passenger
+    const unrequestedRideOccs = _.filter(rocc => {
+      return !requests.some(req => req.RideOccurenceId === rocc.id);
+    });
+
+    console.log("unrequested ", unrequestedRideOccs.length);
+
+    return res.status(200).json({ rides: unrequestedRideOccs });
+  } catch (error) {
+    console.log("==================");
+    console.error("Error fetching rides ", error);
     return res.status(500).json(error);
   }
 };
@@ -271,4 +334,9 @@ const createDailyRideOccurences = async (initialDate, rideId) => {
   return;
 };
 
-module.exports = { createRide, searchForRides, fetchRidesByIds };
+module.exports = {
+  createRide,
+  searchForRides,
+  fetchRidesByIds,
+  fetchAllUnrequestedRides,
+};
