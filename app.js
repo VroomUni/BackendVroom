@@ -2,10 +2,10 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
-const { connectDb } = require("./config/db");
-const { userRouter } = require("./routes/userRouter");
-const { rideRouter } = require("./routes/rideRouter");
-const { requestRouter } = require("./routes/requestRouter");
+const { connectDb } = require("./src/config/db");
+const { userRouter } = require("./src/routes/userRouter");
+const { rideRouter } = require("./src/routes/rideRouter");
+const { requestRouter } = require("./src/routes/requestRouter");
 
 const port = process.env.PORT;
 connectDb();

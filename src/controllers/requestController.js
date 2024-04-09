@@ -24,4 +24,29 @@ const createRequest = async (req, res) => {
     return res.status(500).json(error);
   }
 };
+
+const getRequestsByRideOccId = async (req , res) => {
+  console.log("==================");
+  console.log("Get Request Of Ride  received ");
+
+  const { rideOccurenceId : id } = req.params;
+  const validatedRequestPayload = {
+    ...req.body,
+    passengerLocation: {
+      type: "Point",
+      coordinates: [passengerLocation.latitude, passengerLocation.longitude],
+    },
+  };
+
+  try {
+    //fetch all details abt ride occ = parent ride - user driver - user preferences
+    const request = await RideRequest.create(validatedRequestPayload);
+
+    return res.status(200).json({});
+  } catch (error) {
+    console.log("==================");
+    console.error("Error creating request rides ", error);
+    return res.status(500).json(error);
+  }
+}
 module.exports = { createRequest };

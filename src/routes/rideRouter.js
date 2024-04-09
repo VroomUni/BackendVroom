@@ -1,5 +1,5 @@
 const rideRouter = require("express").Router();
-const isAUth = require("../../middlewares/isAuth");
+const isAUth = require("../middlewares/isAuth");
 const {
   createRide,
   searchForRides,

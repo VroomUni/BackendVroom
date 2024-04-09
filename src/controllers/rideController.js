@@ -99,7 +99,7 @@ const searchForRides = async (req, res) => {
     const requests = await RideRequest.findAll({
       where: { passengerId: passengerId },
     });
-    //filtering rideoccs that the passenger requested 
+    //filtering rideoccs that the passenger requested
     const unrequestedMatchingRides = ridesInRange.filter(rocc => {
       return !requests.some(req => req.RideOccurenceId === rocc);
     });
@@ -172,6 +172,7 @@ const fetchAllUnrequestedRides = async (req, res) => {
   console.log("==================");
   console.log("fetch all unfiltered & unrequested rides received ");
   const { passengerId, filterDate } = req.body;
+  console.log(filterDate);
   try {
     // Fetch all details about ride occurrences = parent ride - user driver - user preferences
     const _ = await RideOccurence.findAll({
@@ -180,6 +181,11 @@ const fetchAllUnrequestedRides = async (req, res) => {
       include: [
         {
           model: Ride,
+          where: {
+            startTime: {
+              [Op.gt]: Sequelize.literal("CURRENT_TIME"), // Less than current time
+            },
+          },
           include: [
             {
               model: User,

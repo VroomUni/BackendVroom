@@ -23,11 +23,9 @@ const Preference = sequelize.define(
     },
     girlsOnly: {
       type: DataTypes.BOOLEAN(),
-      defaultValue: false,
     },
     boysOnly: {
       type: DataTypes.BOOLEAN(),
-      defaultValue: false,
     },
   },
   { timestamps: false }
