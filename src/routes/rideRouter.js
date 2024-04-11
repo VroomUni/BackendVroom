@@ -5,6 +5,7 @@ const {
   searchForRides,
   fetchRidesByIds,
   fetchAllUnrequestedRides,
+  getRidesByDriverId
 } = require("../controllers/rideController");
 
 // rideRouter.use(isAUth);
@@ -13,6 +14,7 @@ rideRouter.post("/", createRide);
 rideRouter.post("/all", fetchAllUnrequestedRides);
 
 rideRouter.get("/", searchForRides);
+rideRouter.get("/driver", getRidesByDriverId);
 rideRouter.get("/byIds", fetchRidesByIds);
 
 module.exports = { rideRouter };

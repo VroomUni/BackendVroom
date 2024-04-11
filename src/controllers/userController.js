@@ -12,6 +12,8 @@ const signUp = async (req, res) => {
     gender: req.body.gender,
     profilePicPath: req.body.profilePicPath,
     firebaseId: req.body.firebaseId,
+    //to add this after signup karim
+    // exponentPushToken: req.body.exponentPushtoken,
   };
 
   try {

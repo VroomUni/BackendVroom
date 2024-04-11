@@ -3,7 +3,7 @@ const mysql = require("mysql2");
 
 const sequelize = new Sequelize(process.env.URL, {
   dialect: "mysql",
-    logging:false
+  logging: false,
 });
 
 const connectDb = async () => {
@@ -14,6 +14,5 @@ const connectDb = async () => {
     console.log("db failed to init :  " + err);
   }
 };
-
 
 module.exports = { connectDb, sequelize, DataTypes };

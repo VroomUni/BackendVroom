@@ -24,6 +24,7 @@ const createRide = async (req, res) => {
 
     const initialDate = new Date(newRide.initialDate);
     const isRideDateToday = isNewRideDateToday(initialDate);
+    console.log("First initial date", initialDate);
 
     if (recurrence.type === "once") {
       await createOnceRideOccurrence(newRide.initialDate, newRide.id);
@@ -232,6 +233,48 @@ const fetchAllUnrequestedRides = async (req, res) => {
   }
 };
 
+const getRidesByDriverId = async (req, res) => {
+  console.log("==================");
+  console.log("search for  rides by driver id request received ");
+  const { id: driverId } = req.query;
+  console.log(driverId);
+  try {
+    //fetch all details abt ride occ = parent ride -requests made to it
+    const rides = await RideOccurence.findAll({
+      where: {
+        // [Op.or]: { status: 0, status: 1 },
+        status: [0, 1],
+      },
+      include: [
+        {
+          model: Ride,
+          attributes: { exclude: ["encodedArea", "initialDate"] },
+          where: {
+            driverFirebaseId: driverId,
+            status: 0,
+          },
+        },
+        {
+          model: User,
+          as: "passenger",
+          through: { model: RideRequest , where:{status:[0,1]} },
+          attributes: { exclude: ["password", "exponentPushToken"] },
+        },
+      ],
+    });
+    rides.forEach(r => {
+      console.log(JSON.stringify(r.dataValues));
+    });
+    return res.status(200).json({
+      rides: rides,
+    });
+  } catch (error) {
+    console.log("==================");
+    console.error("Error fetching  rides ", error);
+    return res.status(500).json(error);
+  }
+};
+
 //utility functions here --
 const isNewRideDateToday = initialDate => {
   const rideDate = initialDate.setHours(0, 0, 0, 0);
@@ -290,6 +333,8 @@ const createWeeklyRideOccurrences = async (
       ]);
       console.log("==================");
       console.log(
+        "initial date",
+        initialDate,
         "next occurrence of:",
         daysOfWeekArray[repeatingDayIndex],
         "date:",
@@ -302,16 +347,25 @@ const createWeeklyRideOccurrences = async (
       const daysUntilTargetDay = (repeatingDayIndex + 7 - rideDateDayIndex) % 7;
       const nextTargetDayDate = new Date(initialDate);
       nextTargetDayDate.setDate(
-        nextTargetDayDate.getDate() + daysUntilTargetDay
+        nextTargetDayDate.getDate() +
+          (daysUntilTargetDay === 0 ? 7 : daysUntilTargetDay)
       );
 
-      await RideOccurence.create({
-        occurenceDate: nextTargetDayDate,
-        RideId: rideId,
-      });
+      await RideOccurence.bulkCreate([
+        {
+          occurenceDate: nextTargetDayDate,
+          RideId: rideId,
+        },
+        {
+          occurenceDate: initialDate,
+          RideId: rideId,
+        },
+      ]);
       console.log("==================");
 
       console.log(
+        "initial date is ",
+        initialDate,
         "next occurrence of:",
         daysOfWeekArray[repeatingDayIndex],
         "date:",
@@ -345,4 +399,5 @@ module.exports = {
   searchForRides,
   fetchRidesByIds,
   fetchAllUnrequestedRides,
+  getRidesByDriverId,
 };

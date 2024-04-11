@@ -5,9 +5,9 @@ const RideOccurence = sequelize.define("Ride_occurence", {
 
   status: {
     type: DataTypes.INTEGER,
-    //-1 : canceled , 0 : available , 1 : fullyReserved , 2 : done
+    //-1 : canceled , 0 : available , 1 : fullyReserved 
     validate: {
-      isIn: [[-1, 0, 1, 2]],
+      isIn: [[-1, 0, 1]],
     },
     allowNull: false,
     defaultValue:0

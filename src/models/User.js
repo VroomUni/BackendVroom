@@ -44,6 +44,10 @@ const User = sequelize.define(
       type: DataTypes.ENUM("male", "female"),
       allowNull: false,
     },
+    exponentPushToken: {
+      type: DataTypes.STRING(45),
+      allowNull: false,
+    },
     profilePicPath: {
       type: DataTypes.STRING(45),
     },
@@ -71,7 +75,7 @@ User.belongsToMany(RideOccurence, {
   through: RideRequest,
   foreignKey: "passengerId",
 }); //1 user can request many ride occurences
-RideOccurence.belongsToMany(User, { through: RideRequest }); //1 Ride occurence can have many user requests
+RideOccurence.belongsToMany(User, { through: RideRequest , as:"passenger" }); //1 Ride occurence can have many user requests
 
 //ride / ride occ associoation
 Ride.hasMany(RideOccurence);
