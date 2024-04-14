@@ -24,29 +24,24 @@ const createRequest = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-
-const getRequestsByRideOccId = async (req , res) => {
+//accepts or declines requests
+const handleRequestResponse = async (req, res) => {
   console.log("==================");
-  console.log("Get Request Of Ride  received ");
+  console.log("accept / decline passenger request received ");
 
-  const { rideOccurenceId : id } = req.params;
-  const validatedRequestPayload = {
-    ...req.body,
-    passengerLocation: {
-      type: "Point",
-      coordinates: [passengerLocation.latitude, passengerLocation.longitude],
-    },
-  };
+  const { id: requestId, isAccepted } = req.body;
 
   try {
-    //fetch all details abt ride occ = parent ride - user driver - user preferences
-    const request = await RideRequest.create(validatedRequestPayload);
-
-    return res.status(200).json({});
+    //accepted -> status=1 / declined -> status=-1
+    const [affectedRowsCount, affectedRows] = await RideRequest.update(
+      { status: isAccepted ? 1 : -1 },
+      { where: { id: requestId } }
+    );
+    return res.sendStatus(200);
   } catch (error) {
     console.log("==================");
     console.error("Error creating request rides ", error);
     return res.status(500).json(error);
   }
-}
-module.exports = { createRequest };
+};
+module.exports = { createRequest,handleRequestResponse };

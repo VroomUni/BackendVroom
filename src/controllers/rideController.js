@@ -120,7 +120,6 @@ const searchForRides = async (req, res) => {
 const fetchRidesByIds = async (req, res) => {
   console.log("==================");
   console.log("search for specefic rides request received ");
-  console.log(req.query);
   const { ids } = req.query;
   const rideIds = ids.split(",");
   try {
@@ -173,7 +172,6 @@ const fetchAllUnrequestedRides = async (req, res) => {
   console.log("==================");
   console.log("fetch all unfiltered & unrequested rides received ");
   const { passengerId, filterDate } = req.body;
-  console.log(filterDate);
   try {
     // Fetch all details about ride occurrences = parent ride - user driver - user preferences
     const _ = await RideOccurence.findAll({
@@ -237,7 +235,6 @@ const getRidesByDriverId = async (req, res) => {
   console.log("==================");
   console.log("search for  rides by driver id request received ");
   const { id: driverId } = req.query;
-  console.log(driverId);
   try {
     //fetch all details abt ride occ = parent ride -requests made to it
     const rides = await RideOccurence.findAll({
@@ -248,7 +245,9 @@ const getRidesByDriverId = async (req, res) => {
       include: [
         {
           model: Ride,
-          attributes: { exclude: ["encodedArea", "initialDate"] },
+          attributes: {
+            exclude: ["encodedArea", "initialDate", "driverFirebaseId"],
+          },
           where: {
             driverFirebaseId: driverId,
             status: 0,
@@ -257,13 +256,20 @@ const getRidesByDriverId = async (req, res) => {
         {
           model: User,
           as: "passenger",
-          through: { model: RideRequest , where:{status:[0,1]} },
+          through: {
+            model: RideRequest,
+            where: { status: [0, 1] },
+            attributes: { exclude: ["passengerId", "RideOccurenceId"] },
+          },
           attributes: { exclude: ["password", "exponentPushToken"] },
+          include: [
+            {
+              model: Preference,
+              attributes: { exclude: ["id", "UserFirebaseId"] },
+            },
+          ],
         },
       ],
-    });
-    rides.forEach(r => {
-      console.log(JSON.stringify(r.dataValues));
     });
     return res.status(200).json({
       rides: rides,

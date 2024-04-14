@@ -10,26 +10,29 @@ const { PassengerRating } = require("./PassengerRating");
 const User = sequelize.define(
   "User",
   {
-    // id: {
-    //   type: DataTypes.INTEGER,
-    //   autoIncrement: true,
-    // },
     firebaseId: { type: DataTypes.STRING(96), primaryKey: true },
-
     email: {
       type: DataTypes.STRING(45),
       allowNull: false,
       validate: {
-        is: /^[a-zA-Z0-9._-]+@(medtech\.tn|msb\.tn|smu\.tn)$/, //ends with msb.tn or medtech.tn
+        is: /^[a-zA-Z0-9._-]+@(medtech\.tn|msb\.tn|smu\.tn)$/,
       },
     },
     firstName: {
       type: DataTypes.STRING(45),
       allowNull: false,
+      get() {
+        const fName = this.getDataValue("firstName");
+        return fName ? fName.charAt(0).toUpperCase() + fName.slice(1) : null;
+      },
     },
     lastName: {
       type: DataTypes.STRING(45),
       allowNull: false,
+      get() {
+        const lName = this.getDataValue("lastName");
+        return lName ? lName.charAt(0).toUpperCase() + lName.slice(1) : null;
+      },
     },
     password: {
       type: DataTypes.STRING(45),
@@ -46,14 +49,12 @@ const User = sequelize.define(
     },
     exponentPushToken: {
       type: DataTypes.STRING(45),
-      allowNull: false,
     },
     profilePicPath: {
       type: DataTypes.STRING(45),
     },
   },
   {
-    //sequelize adds timestamp such as createdAt by default
     timestamps: false,
   }
 );
@@ -75,7 +76,7 @@ User.belongsToMany(RideOccurence, {
   through: RideRequest,
   foreignKey: "passengerId",
 }); //1 user can request many ride occurences
-RideOccurence.belongsToMany(User, { through: RideRequest , as:"passenger" }); //1 Ride occurence can have many user requests
+RideOccurence.belongsToMany(User, { through: RideRequest, as: "passenger" }); //1 Ride occurence can have many user requests
 
 //ride / ride occ associoation
 Ride.hasMany(RideOccurence);

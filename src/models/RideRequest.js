@@ -14,7 +14,7 @@ const RideRequest = sequelize.define("ride_request", {
 
   status: {
     type: DataTypes.INTEGER,
-    //-1 : canceled , 0 : pending , 1 : accepted
+    //-1 : declined , 0 : pending , 1 : accepted
     validate: {
       isIn: [[-1, 0, 1]],
     },

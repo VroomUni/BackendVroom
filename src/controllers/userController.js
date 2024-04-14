@@ -71,4 +71,25 @@ const setPreferences = async (req, res) => {
   }
 };
 
-module.exports = { signUp, setPreferences };
+const getPreferences = async (req, res) => {
+  console.log("preferences request received ");
+  const { userId } = req.query;
+
+  try {
+    const userPrefs = await Preference.findOne({
+      where: { UserFirebaseId: userId },
+      attributes: { exclude: ["id" , "UserFirebaseId"] },
+    });
+
+    console.log("==================");
+    console.log(" preferences fetched:" + JSON.stringify(userPrefs));
+
+    return res.status(200).json(userPrefs);
+  } catch (error) {
+    console.log("==================");
+    console.error("Error creating preferences:", error);
+    return res.status(500).json(error);
+  }
+};
+
+module.exports = { signUp, setPreferences, getPreferences };
