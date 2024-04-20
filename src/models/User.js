@@ -47,6 +47,8 @@ const User = sequelize.define(
     profilePicPath: {
       type: DataTypes.STRING(45),
     },
+    birthDate: { 
+      type: DataTypes.DATE, allowNull: true },
   },
   {
     //sequelize adds timestamp such as createdAt by default

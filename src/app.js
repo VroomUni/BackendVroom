@@ -5,12 +5,14 @@ dotenv.config();
 const { connectDb } = require("./config/db");
 const { userRouter } = require("./routes/userRouter");
 const { rideRouter } = require("./routes/rideRouter");
+const { historyRouter } = require("./routes/historyRouter");
 
 const port = process.env.PORT;
 connectDb();
 
 app.use(express.json());
 //routes and api design to be updated
+app.use("/api/history", historyRouter);
 app.use("/api/user",userRouter);
 app.use("/api/ride",rideRouter)
 
