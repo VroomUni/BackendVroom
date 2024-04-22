@@ -92,4 +92,45 @@ const getPreferences = async (req, res) => {
   }
 };
 
-module.exports = { signUp, setPreferences, getPreferences };
+const getUser = async (req,res) =>{
+  console.log("user retrieval request received")
+  const {userId} = req.query
+  try {
+    const user = await User.findOne({
+      where:{UserFirebaseId: userId},
+      attributes:{exclude:["firebaseId,"]}
+    });
+    console.log("user general information fetched: " +JSON.stringify(user))
+    return res.status(200).json(user)
+  }catch{
+    console.log("error retrieving user",error);
+    return res.status(500).json(error)
+  }
+}
+
+const updateUser = async (req, res) =>{
+  console.log("Update request received")
+  const {userId} = req.query 
+  const updateData = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    phoneNumber: req.body.phoneNumber,
+    profilePicPath: req.body.profilePicPath
+  };
+  try{
+    const user = await User.findOne({
+      where:{UserFirebaseId: userId},
+    })
+    if(!user){
+      return res.status(404).json({msg: " user not found"})
+    }
+    const updatedUser = await user.update(updateData)
+    console.log("user updated: "+ JSON.stringify(updatedUser))
+    return res.status(200).json(updatedUser)
+  }catch{
+    console.log("error updating user",error)
+    return res.status(500),json(error)
+  }
+}
+module.exports = { signUp, setPreferences, getPreferences, getUser,updateUser };
