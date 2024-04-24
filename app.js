@@ -19,7 +19,7 @@ app.use("/api/request", requestRouter);
 
 app.all("/api", async (req, res) => {
   await sendPushNotifications(
-    ["ExponentPushToken[bRblD0F250TZeEYUsW-tAS]"], // Pass the push token as a string in an array
+    ["ExponentPushToken[5I86bCAj1v4WwxIoS12pPN]"], // Pass the push token as a string in an array
     "this is body",
     { withSome: 'data' }  // You can also pass additional data as an object
   );

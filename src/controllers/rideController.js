@@ -231,16 +231,18 @@ const fetchAllUnrequestedRides = async (req, res) => {
   }
 };
 
-const getRidesByDriverId = async (req, res) => {
+const getDriverRides = async (req, res) => {
   console.log("==================");
   console.log("search for  rides by driver id request received ");
   const { id: driverId } = req.query;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   try {
     //fetch all details abt ride occ = parent ride -requests made to it
     const rides = await RideOccurence.findAll({
       where: {
-        // [Op.or]: { status: 0, status: 1 },
         status: [0, 1],
+        occurenceDate: { [Op.gte]: today },
       },
       include: [
         {
@@ -277,6 +279,35 @@ const getRidesByDriverId = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching  rides ", error);
+    return res.status(500).json(error);
+  }
+};
+const cancelRide = async (req, res) => {
+  console.log("==================");
+  console.log("cancel Ride received ");
+  const { rideOccId, allInSeries } = req.body;
+
+  try {
+    const rideOcc = await RideOccurence.findOne({
+      where: { id: rideOccId },
+      attributes: ["RideId", "id"],
+    });
+
+    if (allInSeries) {
+      // canceling all sibling occurrences that have the same parent ride
+      await RideOccurence.update(
+        { status: -1 },
+        { where: { RideId: rideOcc.RideId } }
+      );
+      // canceling the parent ride so that the scheduled event no longer creates occurrences
+      await Ride.update({ status: -1 }, { where: { id: rideOcc.RideId } });
+    } else {
+      await rideOcc.set({ status: -1 }).save();
+    }
+    return res.sendStatus(200);
+  } catch (error) {
+    console.log("==================");
+    console.error("Error fetching rides ", error);
     return res.status(500).json(error);
   }
 };
@@ -405,5 +436,6 @@ module.exports = {
   searchForRides,
   fetchRidesByIds,
   fetchAllUnrequestedRides,
-  getRidesByDriverId,
+  getRidesByDriverId: getDriverRides,
+  cancelRide,
 };
