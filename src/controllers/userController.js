@@ -128,9 +128,27 @@ const updateUser = async (req, res) =>{
     const updatedUser = await user.update(updateData)
     console.log("user updated: "+ JSON.stringify(updatedUser))
     return res.status(200).json(updatedUser)
-  }catch{
+  }catch(error){
     console.log("error updating user",error)
     return res.status(500),json(error)
   }
 }
-module.exports = { signUp, setPreferences, getPreferences, getUser,updateUser };
+
+const deleteUser = async (req,res) =>{
+  const {userId} = req.query
+  try{
+    const user = await User.findOne({
+      where:{firebaseId: userId}
+    })
+    if(!user){
+      return res.status(404).json({msg:"User not found"})
+    }
+    await user.destroy();
+    console.log("User deleted successfully");
+    return res.status(200).json({msg: "User deleted successfully"})
+  }catch (error){
+    console.error("error deleting user",error)
+    return res.status(500).json({error:"failed to delete user"})
+  }
+}
+module.exports = { signUp, setPreferences, getPreferences, getUser,updateUser,deleteUser };
