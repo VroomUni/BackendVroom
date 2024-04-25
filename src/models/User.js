@@ -51,7 +51,7 @@ const User = sequelize.define(
       type: DataTypes.STRING(45),
     },
     profilePicPath: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
     },
   },
   {
