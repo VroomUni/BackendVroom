@@ -78,7 +78,7 @@ const getPreferences = async (req, res) => {
   try {
     const userPrefs = await Preference.findOne({
       where: { UserFirebaseId: userId },
-      attributes: { exclude: ["id" , "UserFirebaseId"] },
+      attributes: { exclude: ["id", "UserFirebaseId"] },
     });
 
     console.log("==================");
@@ -92,4 +92,24 @@ const getPreferences = async (req, res) => {
   }
 };
 
-module.exports = { signUp, setPreferences, getPreferences };
+const uploadUserImage = async (req, res) => {
+  try {
+    console.log("upload img received");
+    // Check if file is uploaded
+    if (!req.file)
+      return res
+        .status(400)
+        .json({ success: false, message: "No image uploaded!" });
+
+    res.status(200).json({
+      success: true,
+      message: "Image uploaded successfully!",
+      imagePath: req.file.path,
+    });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ success: false, message: "Error uploading image!" });
+  }
+};
+
+module.exports = { signUp, setPreferences, getPreferences, uploadUserImage };
