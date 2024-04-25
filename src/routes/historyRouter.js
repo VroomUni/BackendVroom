@@ -1,7 +1,9 @@
-// historyRouter.js
 const historyRouter = require("express").Router();
-const { getPassengerRideHistoryController } = require("../controllers/HistoryController");
+const historyDriverRouter = require("express").Router();
 
-historyRouter.get("/history/:firebaseId", getPassengerRideHistoryController);
+const { getPassengerRideHistoryController, getDriverRideHistoryController } = require("../controllers/HistoryController");
 
-module.exports = { historyRouter };
+historyRouter.get("/:firebaseId", getPassengerRideHistoryController);
+historyDriverRouter.get("/:driverFirebaseId", getDriverRideHistoryController);
+
+module.exports = { historyRouter, historyDriverRouter };
