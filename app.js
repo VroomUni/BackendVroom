@@ -21,9 +21,9 @@ app.all("/api", async (req, res) => {
   await sendPushNotifications(
     ["ExponentPushToken[5I86bCAj1v4WwxIoS12pPN]"], // Pass the push token as a string in an array
     "this is body",
-    { withSome: 'data' }  // You can also pass additional data as an object
+    { withSome: "data" } // You can also pass additional data as an object
   );
-  
+
   res.json("hello world").status(200);
 });
 

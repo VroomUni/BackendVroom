@@ -10,8 +10,7 @@ const connectDb = async () => {
   try {
     await sequelize
       .sync
-      // { : true }
-      ();
+      // ({ alter: true });
     console.log("db connected successfully");
   } catch (err) {
     console.log("db failed to init :  " + err);
