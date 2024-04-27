@@ -1,5 +1,6 @@
 const userRouter = require("express").Router();
 const uploads =require("../middlewares/multer");
+const uploads =require("../middlewares/multer");
 const {
   signUp,
   setPreferences,
