@@ -7,8 +7,8 @@ const { userRouter } = require("./src/routes/userRouter");
 const { rideRouter } = require("./src/routes/rideRouter");
 const { requestRouter } = require("./src/routes/requestRouter");
 const sendPushNotifications = require("./pushNotifications");
-const { historyRouter } = require("./routes/historyRouter");
-const { historyDriverRouter } = require("./routes/historyRouter");
+const { historyRouter } = require("./src/routes/historyRouter");
+const { historyDriverRouter } = require("./src/routes/historyRouter");
 
 const port = process.env.PORT;
 connectDb();

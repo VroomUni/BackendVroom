@@ -53,8 +53,10 @@ const User = sequelize.define(
     profilePicPath: {
       type: DataTypes.STRING(255),
     },
-    birthDate: { 
-      type: DataTypes.DATE, allowNull: true },
+    // birthDate: {
+    //   type: DataTypes.DATE,
+    //   allowNull: true,
+    // },
   },
   {
     timestamps: false,

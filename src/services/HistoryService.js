@@ -1,60 +1,68 @@
 //const { RideOccurence, Ride, User,PassengerRating ,sequelize } = require("../models");
-const { RideOccurence } = require("../../models/RideOccurence");
-const { Ride } = require("../../models/Ride");
-const { User } = require("../../models/User");
-const { PassengerRating } = require("../../models/PassengerRating");
-const { RideRequest } = require("../../models/RideRequest");
-const { sequelize } = require("../../config/db");
-const getPassengerRideHistory = async (passengerFirebaseId) => {
+const { RideOccurence } = require("../models/RideOccurence");
+const { Ride } = require("../models/Ride");
+const { User } = require("../models/User");
+const { PassengerRating } = require("../models/PassengerRating");
+const { RideRequest } = require("../models/RideRequest");
+const { Op, Sequelize } = require("sequelize");
+const getPassengerRideHistory = async passengerId => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   try {
+    //fetch all details abt ride occs in the past (at least one hour has passed  ) - its parent ride -accepted requests on it
     const rides = await RideOccurence.findAll({
-      attributes: ["occurenceDate"],
+      where: {
+        //to get occurences that are non-canceled
+        status: [0, 1],
+        // either compare strictly by date , or if ride is today compare by time => startTime < now - 1 hour
+        [Op.or]: [
+          {
+            occurenceDate: {
+              [Op.lt]: today, // Compare by date: date must be less than today
+            },
+          },
+          Sequelize.literal(
+            `(occurenceDate = CURDATE() AND Ride.startTime < DATE_SUB(NOW(), INTERVAL 1 HOUR))`
+          ),
+        ],
+      },
+
       include: [
         {
           model: Ride,
-          attributes: ["from", "to", "startTime"],
+          attributes: ["startTime", "from", "to", "spots"],
           include: [
             {
               model: User,
               as: "driver",
-              attributes: [
-                ["firstName", "driverFirstName"],
-                ["lastName", "driverLastName"],
-                [
-                  sequelize.literal(
-                    "TIMESTAMPDIFF(YEAR, `driver`.`birthDate`, CURDATE())"
-                  ),
-                  "driverAge",
-                ],
-              ],
+              attributes: { exclude: ["exponentPushToken"] },
             },
           ],
         },
         {
-          model: RideRequest,
-          where: { passengerFirebaseId, status: 1 }, 
-          required: true, // Inner join with RideRequest
+          model: User,
+          as: "passenger",
+          through: {
+            model: RideRequest,
+            // fetch only accepted requests fot the given passenger
+            where: { status: 1, passengerId: passengerId },
+          },
+          required: true,
+
+          attributes: [],
         },
       ],
-      order: [["occurenceDate", "DESC"]],
     });
-
-    return rides.map((ride) => ({
-      driverFirstName: ride.Ride.driver.driverFirstName,
-      driverLastName: ride.Ride.driver.driverLastName,
-      driverAge: ride.Ride.driver.driverAge,
-      startPoint: ride.Ride.from,
-      destination: ride.Ride.to,
-      rideTime: ride.occurenceDate,
-      startTime: ride.Ride.startTime, // Include start time of the ride
-    }));
+    console.log(rides.length);
+    console.log(JSON.stringify(rides));
+    return rides;
   } catch (error) {
-    console.error("Error fetching passenger ride history:", error);
-    throw error;
+    console.log("==================");
+    console.error("Error fetching  rides ", error);
   }
 };
 
-const getDriverRideHistory = async (driverFirebaseId) => {
+const getDriverRideHistory = async driverFirebaseId => {
   try {
     const rides = await RideOccurence.findAll({
       attributes: ["occurrenceDate"],
@@ -73,7 +81,7 @@ const getDriverRideHistory = async (driverFirebaseId) => {
             "lastName",
             "birthDate",
             [
-              sequelize.literal(
+              Sequelize.literal(
                 "TIMESTAMPDIFF(YEAR, `User`.`birthDate`, CURDATE())"
               ),
               "age",
@@ -88,12 +96,12 @@ const getDriverRideHistory = async (driverFirebaseId) => {
       order: [["occurrenceDate", "DESC"]],
     });
 
-    return rides.map((ride) => ({
+    return rides.map(ride => ({
       rideNumber: ride.Ride.id, // Use ride ID as ride number
       startPoint: ride.Ride.from,
       endPoint: ride.Ride.to,
       rideTime: ride.occurrenceDate,
-      passengers: ride.passengers.map((passenger) => ({
+      passengers: ride.passengers.map(passenger => ({
         photo: passenger.photo,
         name: passenger.firstName,
         lastName: passenger.lastName,
