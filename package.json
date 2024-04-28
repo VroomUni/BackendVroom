@@ -4,9 +4,10 @@
   "description": "Vroom backend server",
   "main": "./app.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --setupFiles dotenv/config",
     "start": "nodemon app.js"
   },
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/VroomUni/BackendVroom.git"
