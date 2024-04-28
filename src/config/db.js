@@ -1,14 +1,17 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const mysql = require("mysql2");
 
-const sequelize = new Sequelize(process.env.URL, {
+const sequelize = new Sequelize("mysql://root:root@localhost:3306/Vroom", {
   dialect: "mysql",
   logging: false,
 });
 
 const connectDb = async () => {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize
+      .sync
+      // { : true }
+      ();
     console.log("db connected successfully");
   } catch (err) {
     console.log("db failed to init :  " + err);
