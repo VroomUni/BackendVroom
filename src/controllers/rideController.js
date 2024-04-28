@@ -1,4 +1,4 @@
-const { Op, Sequelize, where } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { Recurrence } = require("../models/Recurrence");
 const { Ride } = require("../models/Ride");
 const { RideOccurence } = require("../models/RideOccurence");
@@ -155,7 +155,7 @@ const fetchRidesByIds = async (req, res) => {
           attributes: { exclude: ["encodedArea"] },
         },
       ],
-      attributes: ["id", "occurenceDate", "note"],
+      attributes: ["id", "occurenceDate"],
     });
 
     return res.status(200).json({
@@ -207,7 +207,7 @@ const fetchAllUnrequestedRides = async (req, res) => {
           attributes: { exclude: ["encodedArea"] },
         },
       ],
-      attributes: ["id", "occurenceDate", "note"],
+      attributes: ["id", "occurenceDate"],
     });
     console.log("OCCs", _.length);
     //fething all requests the passenger made
@@ -311,6 +311,7 @@ const cancelRide = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 //utility functions here --
 const isNewRideDateToday = (initialDate) => {
