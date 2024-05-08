@@ -8,6 +8,10 @@ const {
   getRidesByDriverId,
   cancelRide,
 } = require("../controllers/rideController");
+const {
+  getPassengerRideHistoryController,
+  getDriverRideHistoryController,
+} = require("../controllers/rideHistoryController");
 
 // rideRouter.use(isAUth);
 rideRouter.post("/", createRide);
@@ -18,5 +22,8 @@ rideRouter.post("/all", fetchAllUnrequestedRides);
 rideRouter.get("/", searchForRides);
 rideRouter.get("/driver", getRidesByDriverId);
 rideRouter.get("/byIds", fetchRidesByIds);
+
+rideRouter.get("/history-passenger", getPassengerRideHistoryController);
+rideRouter.get("/history-driver", getDriverRideHistoryController);
 
 module.exports = { rideRouter };

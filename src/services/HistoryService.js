@@ -63,51 +63,49 @@ const getPassengerRideHistory = async passengerId => {
 };
 
 const getDriverRideHistory = async driverFirebaseId => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   try {
     const rides = await RideOccurence.findAll({
-      attributes: ["occurrenceDate"],
+      attributes: ["occurenceDate", "id"],
+      where: {
+        //to get occurences that are non-canceled
+        status: [0, 1],
+        // either compare strictly by date , or if ride is today compare by time => startTime < now - 1 hour
+        [Op.or]: [
+          {
+            occurenceDate: {
+              [Op.lt]: today, // Compare by date: date must be less than today
+            },
+          },
+          Sequelize.literal(
+            `(occurenceDate = CURDATE() AND Ride.startTime < DATE_SUB(NOW(), INTERVAL 1 HOUR))`
+          ),
+        ],
+      },
+
       include: [
         {
           model: Ride,
-          attributes: ["from", "to"],
+          attributes: ["from", "to", "startTime"],
           where: { driverFirebaseId }, // Filter by driverFirebaseId
         },
         {
           model: User,
-          as: "passengers",
-          attributes: [
-            "photo",
-            "firstName",
-            "lastName",
-            "birthDate",
-            [
-              Sequelize.literal(
-                "TIMESTAMPDIFF(YEAR, `User`.`birthDate`, CURDATE())"
-              ),
-              "age",
-            ],
-          ],
+          as: "passenger",
+          attributes: { exclude: ["exponentPushToken"] },
           through: {
-            model: PassengerRating,
-            attributes: [], // Exclude join table attributes
+            model: RideRequest,
+            attributes: [],
+            where: { status: 1 },
           },
+          required: true,
         },
       ],
-      order: [["occurrenceDate", "DESC"]],
+      // order: [["Ride.startTime", "DESC"]],
     });
-
-    return rides.map(ride => ({
-      rideNumber: ride.Ride.id, // Use ride ID as ride number
-      startPoint: ride.Ride.from,
-      endPoint: ride.Ride.to,
-      rideTime: ride.occurrenceDate,
-      passengers: ride.passengers.map(passenger => ({
-        photo: passenger.photo,
-        name: passenger.firstName,
-        lastName: passenger.lastName,
-        age: passenger.age,
-      })),
-    }));
+    console.log(JSON.stringify(rides[0].dataValues));
+    return rides;
   } catch (error) {
     console.error("Error fetching driver ride history:", error);
     throw error;

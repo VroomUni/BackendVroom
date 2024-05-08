@@ -10,7 +10,7 @@ const connectDb = async () => {
   try {
     await sequelize
       .sync (
-      // {alter : true }
+      {alter : true }
       )
       
     console.log("db connected successfully");

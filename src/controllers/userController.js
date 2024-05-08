@@ -7,7 +7,6 @@ const signUp = async (req, res) => {
     email: req.body.email,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
-    password: req.body.password,
     phoneNumber: req.body.phoneNumber,
     gender: req.body.gender,
     profilePicPath: req.body.profilePicPath,
@@ -112,4 +111,26 @@ const uploadUserImage = async (req, res) => {
   }
 };
 
-module.exports = { signUp, setPreferences, getPreferences, uploadUserImage };
+const setExpoPushToken = async (req, res) => {
+  console.log("Set Token req received");
+  const { token, userId } = req.body;
+
+  try {
+    User.update(
+      { exponentPushToken: token },
+      { where: { firebaseId: userId } }
+    );
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error Setting user token:", error);
+    res.status(500).json(error);
+  }
+};
+
+module.exports = {
+  signUp,
+  setPreferences,
+  getPreferences,
+  uploadUserImage,
+  setExpoPushToken,
+};

@@ -263,7 +263,7 @@ const getDriverRides = async (req, res) => {
             where: { status: [0, 1] },
             attributes: { exclude: ["passengerId", "RideOccurenceId"] },
           },
-          attributes: { exclude: ["password", "exponentPushToken"] },
+          attributes: { exclude: ["exponentPushToken"] },
           include: [
             {
               model: Preference,

@@ -7,8 +7,6 @@ const { userRouter } = require("./src/routes/userRouter");
 const { rideRouter } = require("./src/routes/rideRouter");
 const { requestRouter } = require("./src/routes/requestRouter");
 const sendPushNotifications = require("./pushNotifications");
-const { historyRouter } = require("./src/routes/historyRouter");
-const { historyDriverRouter } = require("./src/routes/historyRouter");
 
 const port = process.env.PORT;
 connectDb();
@@ -18,8 +16,6 @@ app.use(express.json());
 app.use("/api/user", userRouter);
 app.use("/api/ride", rideRouter);
 app.use("/api/request", requestRouter);
-app.use("/api/history", historyRouter);
-app.use("/api/history-driver", historyDriverRouter); // Use historyDriverRouter for driver history
 
 app.all("/api", async (req, res) => {
   await sendPushNotifications(

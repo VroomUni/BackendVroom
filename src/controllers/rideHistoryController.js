@@ -17,14 +17,12 @@ const getPassengerRideHistoryController = async (req, res) => {
   }
 };
 
-// historyController.js
-
 const getDriverRideHistoryController = async (req, res) => {
-  const { driverFirebaseId } = req.params;
-
+  console.log("get Driver Ride history Req received");
+  const { driverId } = req.query;
   try {
-    const rideHistory = await getDriverRideHistory(driverFirebaseId);
-    return res.status(200).json({ rideHistory });
+    const driverRideHistory = await getDriverRideHistory(driverId);
+    return res.status(200).json(driverRideHistory);
   } catch (error) {
     console.error("Error fetching driver ride history:", error);
     return res
