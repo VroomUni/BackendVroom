@@ -311,35 +311,6 @@ const cancelRide = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-const cancelRide = async (req, res) => {
-  console.log("==================");
-  console.log("cancel Ride received ");
-  const { rideOccId, allInSeries } = req.body;
-
-  try {
-    const rideOcc = await RideOccurence.findOne({
-      where: { id: rideOccId },
-      attributes: ["RideId", "id"],
-    });
-
-    if (allInSeries) {
-      // canceling all sibling occurrences that have the same parent ride
-      await RideOccurence.update(
-        { status: -1 },
-        { where: { RideId: rideOcc.RideId } }
-      );
-      // canceling the parent ride so that the scheduled event no longer creates occurrences
-      await Ride.update({ status: -1 }, { where: { id: rideOcc.RideId } });
-    } else {
-      await rideOcc.set({ status: -1 }).save();
-    }
-    return res.sendStatus(200);
-  } catch (error) {
-    console.log("==================");
-    console.error("Error fetching rides ", error);
-    return res.status(500).json(error);
-  }
-};
 
 
 //utility functions here --
