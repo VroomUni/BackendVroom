@@ -79,7 +79,6 @@ const getPreferences = async (req, res) => {
     const userPrefs = await Preference.findOne({
       where: { UserFirebaseId: userId },
       attributes: { exclude: ["id", "UserFirebaseId"] },
-      attributes: { exclude: ["id", "UserFirebaseId"] },
     });
 
     console.log("==================");
@@ -113,4 +112,4 @@ const uploadUserImage = async (req, res) => {
   }
 };
 
-module.exports = { signUp, setPreferences, getPreferences, uploadUserImage }
+module.exports = { signUp, setPreferences, getPreferences, uploadUserImage };
