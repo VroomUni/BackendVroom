@@ -1,6 +1,7 @@
 const { Preference } = require("../models/Preferences");
 const { User } = require("../models/User");
-const { Car } = require('../models/Car');
+const { Car } = require("../models/Car");
+const { json } = require("sequelize");
 
 const signUp = async (req, res) => {
   console.log("signup request received ");
@@ -112,49 +113,7 @@ const uploadUserImage = async (req, res) => {
     res.status(500).json({ success: false, message: "Error uploading image!" });
   }
 };
-
-// get user information
-const getUser = async (req,res)=>{
-  console.log("user retrieval request received");
-  const {userId} = req.query;
-try {
-  const user = await User.findOne({
-    where:{UserFirebaseId: userId},
-    attributes:{exclude:["firebaseId"]}
-  });
-  console.log("User general information fetched: "+ JSON.stringify(user));
-  return res.status(200).json(user);
-}catch(error){
-  console.log("error retrieving user:",error)
-  return res.status(500).json("error:", error.message)
-}
-};
-
-
-
-
-
-// get user information
-const getUser = async (req,res)=>{
-  console.log("user retrieval request received");
-  const {userId} = req.query;
-try {
-  const user = await User.findOne({
-    where:{UserFirebaseId: userId},
-    attributes:{exclude:["firebaseId"]}
-  });
-  console.log("User general information fetched: "+ JSON.stringify(user));
-  return res.status(200).json(user);
-}catch(error){
-  console.log("error retrieving user:",error)
-  return res.status(500).json("error:", error.message)
-}
-};
-
-
-
 const createCar = async (req, res) => {
-
   console.log("car request received ");
   const carInfo = {
     brand: req.body.brand,
@@ -170,24 +129,146 @@ const createCar = async (req, res) => {
     return res.status(200).json(car);
   } catch (error) {
     console.log("==================");
-    console.error('Error creating car:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error creating car:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 const getCar = async (req, res) => {
   const { UserFirebaseId } = req.params.firebaseId;
   try {
-    const car = await Car.findOne({ where:  UserFirebaseId  });
+    const car = await Car.findOne({ where: UserFirebaseId });
     if (car) {
       return res.status(200).json(car);
     }
-    throw new Error('Car not found');
+    throw new Error("Car not found");
   } catch (error) {
-    console.error('Error fetching car by user ID:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching car by user ID:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-module.exports = { signUp, setPreferences, getPreferences, uploadUserImage, createCar, getCar };
+// get user information
+const getUser = async (req, res) => {
+  console.log("user retrieval request received");
+  const { userId } = req.query;
+  try {
+    const user = await User.findOne({
+      where: { UserFirebaseId: userId },
+      attributes: { exclude: ["firebaseId"] },
+    });
+    console.log("User general information fetched: " + JSON.stringify(user));
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log("error retrieving user:", error);
+    return res.status(500).json("error:", error.message);
+  }
+};
+
+//update user information
+const updateUser = async (req, res) => {
+  console.log("update request received");
+  const { userId } = req.query;
+  const updateData = {
+    firstName: req.body.FirstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    phoneNumber: req.body.phoneNumber,
+    profilePicPath: req.body.profilePicPath,
+  };
+  try {
+    const user = await User.findOne({
+      where: { UserFirebaseId: userId },
+    });
+    if (!user) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+    const updatedUser = await user.update(updateData);
+    console.log("user updated: " + JSON.stringify(updatedUser));
+    return res.status(200).json(updatedUser);
+  } catch (error) {
+    console.log("error updating user");
+    return res.status(500).json("error:", error.message);
+  }
+};
+
+//delete user
+const deleteUser = async (req, res) => {
+  const { userId } = req.query;
+  try {
+    const user = await User.findOne({
+      where: { firebaseId: userId },
+    });
+    if (!user) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+    await user.destroy();
+    console.log("user deleted succesfully");
+    return res.status(200).json({ msg: "user deleted succesfully" });
+  } catch (error) {
+    console.error("error deleting user", error.message);
+    return res.status(500).json("failed to delete user", error.message);
+  }
+};
+// update car information
+const updateCar = async (req, res) => {
+  console.log("update car request received");
+  const { carId } = req.query;
+  const updateData = {
+    brand: req.body.brand,
+    model: req.body.model,
+    color: req.body.color,
+  };
+  try {
+    const car = await Car.findOne({
+      where: { id: carId },
+    });
+    if (!car) {
+      return res.status(404).json({ msg: "car not found" });
+    }
+    const updatedCar = await car.update(updateData);
+    console.log("car updated:" + JSON.stringify(updatedCar));
+    return res.status(200).json(updatedCar);
+  } catch (error) {
+    console.log("error update car", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+//update preferences
+const updatePreferences = async (req, res) => {
+  const { userId } = req.query;
+  const updateData = {
+    smoking: req.body.smoking,
+    talkative: req.body.talkative,
+    loudMusic: req.body.loudMusic,
+    foodFriendly: req.body.foodFriendly,
+    girlsOnly: req.body.girlsOnly,
+    boysOnly: req.body.boysOnly,
+  };
+  try {
+    const userPrefs = await Preference.findOne({
+      where: { firebaseId: userId },
+    });
+    if (!userPrefs) {
+      return res.status(404).send("preferences not found");
+    }
+    const updatedPreferences = await userPrefs.update(updateData);
+    return res.json(updatedPreferences);
+  } catch (error) {
+    return res.status(500).send("failed to get preferences", error.message);
+  }
+};
+module.exports = {
+  signUp,
+  setPreferences,
+  getPreferences,
+  uploadUserImage,
+  createCar,
+  getCar,
+  updateCar,
+  getUser,
+  updateUser,
+  deleteUser,
+  updatePreferences,
+};
