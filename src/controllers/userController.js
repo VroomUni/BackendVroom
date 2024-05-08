@@ -112,4 +112,22 @@ const uploadUserImage = async (req, res) => {
   }
 };
 
+// get user information
+const getUser = async (req,res)=>{
+  console.log("user retrieval request received");
+  const {userId} = req.query;
+try {
+  const user = await User.findOne({
+    where:{UserFirebaseId: userId},
+    attributes:{exclude:["firebaseId"]}
+  });
+  console.log("User general information fetched: "+ JSON.stringify(user));
+  return res.status(200).json(user);
+}catch(error){
+  console.log("error retrieving user:",error)
+  return res.status(500).json("error:", error.message)
+}
+};
+
+
 module.exports = { signUp, setPreferences, getPreferences, uploadUserImage };

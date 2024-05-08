@@ -12,4 +12,5 @@ userRouter.post("/preferences", setPreferences);
 userRouter.get("/preferences", getPreferences);
 userRouter.post("/upload-image", uploads.single("image"),uploadUserImage);
 
+
 module.exports = { userRouter };
