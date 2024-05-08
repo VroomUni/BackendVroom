@@ -1,5 +1,6 @@
 const { Preference } = require("../models/Preferences");
 const { User } = require("../models/User");
+const { Car } = require('../models/Car');
 
 const signUp = async (req, res) => {
   console.log("signup request received ");
@@ -130,4 +131,63 @@ try {
 };
 
 
-module.exports = { signUp, setPreferences, getPreferences, uploadUserImage };
+
+
+
+// get user information
+const getUser = async (req,res)=>{
+  console.log("user retrieval request received");
+  const {userId} = req.query;
+try {
+  const user = await User.findOne({
+    where:{UserFirebaseId: userId},
+    attributes:{exclude:["firebaseId"]}
+  });
+  console.log("User general information fetched: "+ JSON.stringify(user));
+  return res.status(200).json(user);
+}catch(error){
+  console.log("error retrieving user:",error)
+  return res.status(500).json("error:", error.message)
+}
+};
+
+
+
+const createCar = async (req, res) => {
+
+  console.log("car request received ");
+  const carInfo = {
+    brand: req.body.brand,
+    model: req.body.model,
+    color: req.body.color,
+    UserFirebaseId: req.body.UserFirebaseId,
+  };
+
+  try {
+    const car = await Car.create(carInfo);
+    console.log("==================");
+    console.log("new car created:" + JSON.stringify(carInfo));
+    return res.status(200).json(car);
+  } catch (error) {
+    console.log("==================");
+    console.error('Error creating car:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+const getCar = async (req, res) => {
+  const { UserFirebaseId } = req.params.firebaseId;
+  try {
+    const car = await Car.findOne({ where:  UserFirebaseId  });
+    if (car) {
+      return res.status(200).json(car);
+    }
+    throw new Error('Car not found');
+  } catch (error) {
+    console.error('Error fetching car by user ID:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+module.exports = { signUp, setPreferences, getPreferences, uploadUserImage, createCar, getCar };
