@@ -46,7 +46,7 @@ const createRide = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error creating ride ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 //searches for rides based on filters provided by passenger
@@ -88,21 +88,21 @@ const searchForRides = async (req, res) => {
       attributes: ["encodedArea"],
     });
     const ridesInRange = rides
-      .filter(ride => {
+      .filter((ride) => {
         const isPassengerInRange = isPointInPolygon(
           JSON.parse(destinationOrOrigin),
           formatPolygon(ride.encodedArea)
         );
         return isPassengerInRange;
       })
-      .flatMap(ride => ride.Ride_occurences.map(rOcc => rOcc.id));
+      .flatMap((ride) => ride.Ride_occurences.map((rOcc) => rOcc.id));
     //fething all requests the passenger made
     const requests = await RideRequest.findAll({
       where: { passengerId: passengerId },
     });
     //filtering rideoccs that the passenger requested
-    const unrequestedMatchingRides = ridesInRange.filter(rocc => {
-      return !requests.some(req => req.RideOccurenceId === rocc);
+    const unrequestedMatchingRides = ridesInRange.filter((rocc) => {
+      return !requests.some((req) => req.RideOccurenceId === rocc);
     });
 
     console.log("MATCHED RIDES COUNT", unrequestedMatchingRides.length);
@@ -113,7 +113,7 @@ const searchForRides = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error searching for a ride ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 //accepts ride Ids and fetches them / todo:  exclude rides already sent request
@@ -164,7 +164,7 @@ const fetchRidesByIds = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching  rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 // will redo this with sequelize logic in future
@@ -217,8 +217,8 @@ const fetchAllUnrequestedRides = async (req, res) => {
 
     console.log("REQS", requests.length);
     //filtering rideOccurences that already are requested by the passenger
-    const unrequestedRideOccs = _.filter(rocc => {
-      return !requests.some(req => req.RideOccurenceId === rocc.id);
+    const unrequestedRideOccs = _.filter((rocc) => {
+      return !requests.some((req) => req.RideOccurenceId === rocc.id);
     });
 
     console.log("unrequested ", unrequestedRideOccs.length);
@@ -227,7 +227,7 @@ const fetchAllUnrequestedRides = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -279,7 +279,7 @@ const getDriverRides = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching  rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 const cancelRide = async (req, res) => {
@@ -308,12 +308,13 @@ const cancelRide = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
+
 //utility functions here --
-const isNewRideDateToday = initialDate => {
+const isNewRideDateToday = (initialDate) => {
   const rideDate = initialDate.setHours(0, 0, 0, 0);
   const currentDate = new Date().setHours(0, 0, 0, 0);
   return rideDate === currentDate;
@@ -324,8 +325,8 @@ const timeFilterHandler = (fromTime, toTime) => {
   }
   return { [Op.between]: [fromTime, toTime] };
 };
-const formatPolygon = polygon => {
-  return decode(polygon).map(cord => ({
+const formatPolygon = (polygon) => {
+  return decode(polygon).map((cord) => ({
     latitude: cord[0],
     longitude: cord[1],
   }));

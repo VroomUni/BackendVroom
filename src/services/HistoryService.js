@@ -104,7 +104,6 @@ const getDriverRideHistory = async driverFirebaseId => {
       ],
       // order: [["Ride.startTime", "DESC"]],
     });
-    console.log(JSON.stringify(rides[0].dataValues));
     return rides;
   } catch (error) {
     console.error("Error fetching driver ride history:", error);

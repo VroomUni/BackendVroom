@@ -4,9 +4,10 @@
   "description": "Vroom backend server",
   "main": "./app.js",
   "scripts": {
-    "test": "test",
+    "test": "jest --setupFiles dotenv/config",
     "start": "nodemon app.js"
   },
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/VroomUni/BackendVroom.git"
@@ -18,7 +19,11 @@
   },
   "homepage": "https://github.com/VroomUni/BackendVroom#readme",
   "devDependencies": {
-    "nodemon": "^3.0.3"
+    "jest": "^29.7.0",
+    "node-mocks-http": "^1.14.1",
+    "nodemon": "^3.0.3",
+    "sinon": "^17.0.1",
+    "supertest": "^7.0.0"
   },
   "dependencies": {
     "@googlemaps/polyline-codec": "^1.0.28",
