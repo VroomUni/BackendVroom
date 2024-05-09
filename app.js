@@ -6,6 +6,7 @@ const { connectDb } = require("./src/config/db");
 const { userRouter } = require("./src/routes/userRouter");
 const { rideRouter } = require("./src/routes/rideRouter");
 const { requestRouter } = require("./src/routes/requestRouter");
+const ratingRoutes = require("./src/routes/ratingRoutes"); // Import ratingRoutes
 const sendPushNotifications = require("./pushNotifications");
 
 const port = process.env.PORT;
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use("/api/user", userRouter);
 app.use("/api/ride", rideRouter);
 app.use("/api/request", requestRouter);
+app.use("/api/rate", ratingRoutes); // Use ratingRoutes
 
 app.all("/api", async (req, res) => {
   await sendPushNotifications(
