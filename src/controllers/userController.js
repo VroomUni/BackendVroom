@@ -219,7 +219,7 @@ const deleteUser = async (req, res) => {
 // update car information
 const updateCar = async (req, res) => {
   console.log("update car request received");
-  const { carId } = req.query;
+  const { userId } = req.query;
   const updateData = {
     brand: req.body.brand,
     model: req.body.model,
@@ -227,7 +227,7 @@ const updateCar = async (req, res) => {
   };
   try {
     const car = await Car.findOne({
-      where: { id: carId },
+      where: { firebaseId: userId },
     });
     if (!car) {
       return res.status(404).json({ msg: "car not found" });
