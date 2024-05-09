@@ -5,11 +5,13 @@ const {
   searchForRides,
   fetchRidesByIds,
   fetchAllUnrequestedRides,
-  getRidesByDriverId
+  getRidesByDriverId,
+  cancelRide,
 } = require("../controllers/rideController");
 
 // rideRouter.use(isAUth);
 rideRouter.post("/", createRide);
+rideRouter.put("/", cancelRide);
 //change this to a get req in future
 rideRouter.post("/all", fetchAllUnrequestedRides);
 

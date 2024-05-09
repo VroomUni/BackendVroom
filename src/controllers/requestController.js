@@ -21,7 +21,7 @@ const createRequest = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error creating request rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 //accepts or declines requests
@@ -41,7 +41,7 @@ const handleRequestResponse = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error creating request rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
-module.exports = { createRequest,handleRequestResponse };
+module.exports = { createRequest, handleRequestResponse };

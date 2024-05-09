@@ -8,7 +8,11 @@ const sequelize = new Sequelize(process.env.URL, {
 
 const connectDb = async () => {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize
+      .sync (
+      // {alter : true }
+      )
+      
     console.log("db connected successfully");
   } catch (err) {
     console.log("db failed to init :  " + err);
