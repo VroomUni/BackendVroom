@@ -152,11 +152,17 @@ const getCar = async (req, res) => {
 const getUser = async (req, res) => {
   console.log("user retrieval request received");
   const { userId } = req.query;
+  console.log("userid", userId)
   try {
     const user = await User.findOne({
-      where: { UserFirebaseId: userId },
+      where: { firebaseId: userId },
       attributes: { exclude: ["firebaseId"] },
     });
+    console.log(user)
+    if (!user) {
+      console.log("No user found with the given ID");
+      return res.status(404).json({ message: "User not found" });
+    }
     console.log("User general information fetched: " + JSON.stringify(user));
     return res.status(200).json(user);
   } catch (error) {
@@ -178,7 +184,7 @@ const updateUser = async (req, res) => {
   };
   try {
     const user = await User.findOne({
-      where: { UserFirebaseId: userId },
+      where: { firebaseId: userId },
     });
     if (!user) {
       return res.status(404).json({ msg: "user not found" });

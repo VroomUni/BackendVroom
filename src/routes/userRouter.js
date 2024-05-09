@@ -20,9 +20,9 @@ userRouter.get("/preferences", getPreferences);
 userRouter.post("/upload-image", uploads.single("image"),uploadUserImage);
 userRouter.post("/car", createCar);
 userRouter.post("/car", getCar);
-userRouter.get("/user",getUser);
-userRouter.put("/user",updateUser);
-userRouter.delete("/user",deleteUser);
+userRouter.get("/info",getUser);
+userRouter.put("/info",updateUser);
+userRouter.delete("/info",deleteUser);
 userRouter.put("/car",updateCar);
 userRouter.put("/preferences",updatePreferences)
 
