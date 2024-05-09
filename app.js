@@ -3,10 +3,11 @@ const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
 const { connectDb } = require("./src/config/db");
+
 const { userRouter } = require("./src/routes/userRouter");
 const { rideRouter } = require("./src/routes/rideRouter");
 const { requestRouter } = require("./src/routes/requestRouter");
-const ratingRoutes = require("./src/routes/ratingRoutes"); // Import ratingRoutes
+// const ratingRouter = require("./src/routes/ratingRoutes");
 const sendPushNotifications = require("./pushNotifications");
 const { historyRouter } = require("./src/routes/historyRouter");
 const { historyDriverRouter } = require("./src/routes/historyRouter");
@@ -19,7 +20,7 @@ app.use(express.json());
 app.use("/api/user", userRouter);
 app.use("/api/ride", rideRouter);
 app.use("/api/request", requestRouter);
-app.use("/api/rate", ratingRoutes); // Use ratingRoutes
+// app.use("/api/rate", ratingRouter); // Use ratingRouter
 app.use("/api/history", historyRouter);
 app.use("/api/history-driver", historyDriverRouter); // Use historyDriverRouter for driver history
 
