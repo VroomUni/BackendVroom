@@ -284,6 +284,21 @@ const setExpoPushToken = async (req, res) => {
   }
 };
 
+const deletePushToken = async (req, res) => {
+  console.log("delete token received");
+  const { userId } = req.query;
+  try {
+    await User.update(
+      { exponentPushToken: null },
+      { where: { firebaseId: userId } }
+    );
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
+};
+
 module.exports = {
   signUp,
   setPreferences,
@@ -297,4 +312,5 @@ module.exports = {
   updateUser,
   deleteUser,
   updatePreferences,
+  deletePushToken,
 };

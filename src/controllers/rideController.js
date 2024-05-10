@@ -73,6 +73,7 @@ const searchForRides = async (req, res) => {
         //to handle both cases when an exact time or an interval is provided
         startTime: timeFilterHandler(fromTime, toTime),
         status: 0,
+        driverFirebaseId: { [Op.ne]: passengerId },
       },
       include: [
         {
@@ -88,21 +89,21 @@ const searchForRides = async (req, res) => {
       attributes: ["encodedArea"],
     });
     const ridesInRange = rides
-      .filter((ride) => {
+      .filter(ride => {
         const isPassengerInRange = isPointInPolygon(
           JSON.parse(destinationOrOrigin),
           formatPolygon(ride.encodedArea)
         );
         return isPassengerInRange;
       })
-      .flatMap((ride) => ride.Ride_occurences.map((rOcc) => rOcc.id));
+      .flatMap(ride => ride.Ride_occurences.map(rOcc => rOcc.id));
     //fething all requests the passenger made
     const requests = await RideRequest.findAll({
       where: { passengerId: passengerId },
     });
     //filtering rideoccs that the passenger requested
-    const unrequestedMatchingRides = ridesInRange.filter((rocc) => {
-      return !requests.some((req) => req.RideOccurenceId === rocc);
+    const unrequestedMatchingRides = ridesInRange.filter(rocc => {
+      return !requests.some(req => req.RideOccurenceId === rocc);
     });
 
     console.log("MATCHED RIDES COUNT", unrequestedMatchingRides.length);
@@ -184,6 +185,9 @@ const fetchAllUnrequestedRides = async (req, res) => {
             startTime: {
               [Op.gt]: Sequelize.literal("CURRENT_TIME"), // Less than current time
             },
+            driverFirebaseId: {
+              [Op.ne]: passengerId,
+            },
           },
           include: [
             {
@@ -217,8 +221,8 @@ const fetchAllUnrequestedRides = async (req, res) => {
 
     console.log("REQS", requests.length);
     //filtering rideOccurences that already are requested by the passenger
-    const unrequestedRideOccs = _.filter((rocc) => {
-      return !requests.some((req) => req.RideOccurenceId === rocc.id);
+    const unrequestedRideOccs = _.filter(rocc => {
+      return !requests.some(req => req.RideOccurenceId === rocc.id);
     });
 
     console.log("unrequested ", unrequestedRideOccs.length);
@@ -312,9 +316,8 @@ const cancelRide = async (req, res) => {
   }
 };
 
-
 //utility functions here --
-const isNewRideDateToday = (initialDate) => {
+const isNewRideDateToday = initialDate => {
   const rideDate = initialDate.setHours(0, 0, 0, 0);
   const currentDate = new Date().setHours(0, 0, 0, 0);
   return rideDate === currentDate;
@@ -325,8 +328,8 @@ const timeFilterHandler = (fromTime, toTime) => {
   }
   return { [Op.between]: [fromTime, toTime] };
 };
-const formatPolygon = (polygon) => {
-  return decode(polygon).map((cord) => ({
+const formatPolygon = polygon => {
+  return decode(polygon).map(cord => ({
     latitude: cord[0],
     longitude: cord[1],
   }));
