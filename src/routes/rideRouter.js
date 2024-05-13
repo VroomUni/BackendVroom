@@ -1,5 +1,5 @@
 const rideRouter = require("express").Router();
-const isAUth = require("../middlewares/isAuth");
+// const isAUth = require("../middlewares/isAuth");
 const {
   createRide,
   searchForRides,
@@ -7,6 +7,7 @@ const {
   fetchAllUnrequestedRides,
   getRidesByDriverId,
   cancelRide,
+  getPassengerScheduledRides,
 } = require("../controllers/rideController");
 const {
   getPassengerRideHistoryController,
@@ -21,6 +22,7 @@ rideRouter.post("/all", fetchAllUnrequestedRides);
 
 rideRouter.get("/", searchForRides);
 rideRouter.get("/driver", getRidesByDriverId);
+rideRouter.get("/passenger", getPassengerScheduledRides);
 rideRouter.get("/byIds", fetchRidesByIds);
 
 rideRouter.get("/history-passenger", getPassengerRideHistoryController);
