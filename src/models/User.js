@@ -34,10 +34,6 @@ const User = sequelize.define(
         return lName ? lName.charAt(0).toUpperCase() + lName.slice(1) : null;
       },
     },
-    password: {
-      type: DataTypes.STRING(45),
-      allowNull: false,
-    },
     phoneNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,

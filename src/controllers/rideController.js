@@ -46,7 +46,7 @@ const createRide = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error creating ride ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 //searches for rides based on filters provided by passenger
@@ -73,6 +73,7 @@ const searchForRides = async (req, res) => {
         //to handle both cases when an exact time or an interval is provided
         startTime: timeFilterHandler(fromTime, toTime),
         status: 0,
+        driverFirebaseId: { [Op.ne]: passengerId },
       },
       include: [
         {
@@ -113,7 +114,7 @@ const searchForRides = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error searching for a ride ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 //accepts ride Ids and fetches them / todo:  exclude rides already sent request
@@ -164,7 +165,7 @@ const fetchRidesByIds = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching  rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 // will redo this with sequelize logic in future
@@ -183,6 +184,9 @@ const fetchAllUnrequestedRides = async (req, res) => {
           where: {
             startTime: {
               [Op.gt]: Sequelize.literal("CURRENT_TIME"), // Less than current time
+            },
+            driverFirebaseId: {
+              [Op.ne]: passengerId,
             },
           },
           include: [
@@ -227,6 +231,63 @@ const fetchAllUnrequestedRides = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching rides ", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const getPassengerScheduledRides = async (req, res) => {
+  console.log("==================");
+  console.log("search for  passenger rides  request received ");
+  const { passengerId } = req.query;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  try {
+    //fetch all details abt ride occ = parent ride -requests made to it
+    const rides = await RideOccurence.findAll({
+      where: {
+        status: [0, 1],
+        occurenceDate: { [Op.gte]: today },
+      },
+      include: [
+        {
+          model: Ride,
+          attributes: {
+            exclude: [
+              "encodedArea",
+              "initialDate",
+              "driverFirebaseId",
+              "encodedPath",
+            ],
+          },
+          where: {
+            status: 0,
+          },
+          include: [
+            {
+              model: User,
+              as: "driver",
+              attributes: { exclude: ["exponentPushToken"] },
+            },
+          ],
+        },
+        {
+          model: User,
+          as: "passenger",
+          through: {
+            model: RideRequest,
+            attributes: { exclude: ["passengerId", "RideOccurenceId"] },
+          },
+          // attributes: [],
+          where: {
+            firebaseId: passengerId,
+          },
+        },
+      ],
+    });
+    return res.status(200).json(rides);
+  } catch (error) {
+    console.log("==================");
+    console.error("Error fetching  rides ", error);
     return res.status(500).json(error);
   }
 };
@@ -263,7 +324,7 @@ const getDriverRides = async (req, res) => {
             where: { status: [0, 1] },
             attributes: { exclude: ["passengerId", "RideOccurenceId"] },
           },
-          attributes: { exclude: ["password", "exponentPushToken"] },
+          attributes: { exclude: ["exponentPushToken"] },
           include: [
             {
               model: Preference,
@@ -279,7 +340,7 @@ const getDriverRides = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching  rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 const cancelRide = async (req, res) => {
@@ -308,7 +369,7 @@ const cancelRide = async (req, res) => {
   } catch (error) {
     console.log("==================");
     console.error("Error fetching rides ", error);
-    return res.status(500).json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -438,4 +499,5 @@ module.exports = {
   fetchAllUnrequestedRides,
   getRidesByDriverId: getDriverRides,
   cancelRide,
+  getPassengerScheduledRides,
 };
